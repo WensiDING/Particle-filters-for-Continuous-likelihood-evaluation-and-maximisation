@@ -1,0 +1,39 @@
+### AR(1) Model
+sigma_epsilon_square_0 = 2
+sigma_eta_square_0 = 0.02
+phi_0 = 0.975
+mu_0 = 0.5
+
+
+log-likelihood calculation finished for mu = 0.30000000000000004 : -9073.457000699505
+log-likelihood calculation finished for mu = 0.35000000000000003 : -9069.098890938496
+log-likelihood calculation finished for mu = 0.4 : -9067.501078867926
+log-likelihood calculation finished for mu = 0.45 : -9064.984517010713
+log-likelihood calculation finished for mu = 0.5 : -9065.548031977843
+log-likelihood calculation finished for mu = 0.55 : -9068.135095224066
+log-likelihood calculation finished for mu = 0.6000000000000001 : -9069.343612886798
+log-likelihood calculation finished for mu = 0.65 : -9070.749859951997
+
+[-9073.4570007  -9069.09889094 -9067.50107887 -9064.98451701 -9065.54803198
+ -9068.13509522 -9069.34361289 -9070.74985995]
+
+### SV with leverage Model
+mu_0 = 0.5
+phi_0 = 0.975
+sigma_eta_square_0 = 0.02
+rho_0 = -0.8
+
+log-likelihood calculation finished for mu = 0.35000000000000003 : -3101.5731491857205
+log-likelihood calculation finished for mu = 0.36 : -3090.537392050517
+log-likelihood calculation finished for mu = 0.37 : -3082.671830368363
+log-likelihood calculation finished for mu = 0.38 : -3071.3806930938863
+log-likelihood calculation finished for mu = 0.39 : -3062.044589058978
+log-likelihood calculation finished for mu = 0.4 : -3050.5514304276285
+log-likelihood calculation finished for mu = 0.41000000000000003 : -3042.9261598295075
+log-likelihood calculation finished for mu = 0.42 : -3034.550393711548
+log-likelihood calculation finished for mu = 0.43 : -3029.184900230021
+log-likelihood calculation finished for mu = 0.44 : -3019.7538850296323
+log-likelihood calculation finished for mu = 0.45 : -3010.4843657621673
+[-3101.57314919 -3090.53739205 -3082.67183037 -3071.38069309 -3062.04458906
+ -3050.55143043 -3042.92615983 -3034.55039371 -3029.18490023 -3019.75388503
+ -3010.48436576]

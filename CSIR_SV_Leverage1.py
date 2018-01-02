@@ -5,25 +5,14 @@ from scipy.stats import norm
 # and the normalized weights for resampling step
 
 
-def importance_ratio(likelihood_func, y, xs, eta):
-    log_weights = [likelihood_func(y, x, eta) for x in xs]
+def importance_ratio(likelihood_func, y, xs):
+    log_weights = [likelihood_func(y, x) for x in xs]
     maximum = np.max(log_weights)
     weights_ratio = np.exp(log_weights - maximum)
     likelihood = np.mean(weights_ratio) * np.exp(maximum)
     normalized_weights = weights_ratio / sum(weights_ratio)
     return likelihood, normalized_weights
 
-
-def importance_ratio_vect(likelihood_func, y, xs, eta):
-    log_weights = np.zeros(len(xs))
-    for i in range(len(xs)):
-        log_weights[i] = likelihood_func(y, xs[i], eta[i])
-    # log_weights = [likelihood_func(y, x, eta) for x in xs]
-    maximum = np.max(log_weights)
-    weights_ratio = np.exp(log_weights - maximum)
-    likelihood = np.mean(weights_ratio) * np.exp(maximum)
-    normalized_weights = weights_ratio / sum(weights_ratio)
-    return likelihood, normalized_weights
 # resampling methods
 
 
@@ -63,11 +52,10 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
     likelihoods = np.zeros(T)
     new_particles = np.zeros(N)
     for i in range(T):
-        eta = np.random.randn(N)
         for j in range(N):
-            new_particles[j] = transition(initial_particles[j], eta[j])
-        likelihood, normalized_weights = importance_ratio_vect(
-            likelihood_func, observations[i], new_particles, eta)
+            new_particles[j] = transition(initial_particles[j])
+        likelihood, normalized_weights = importance_ratio(
+            likelihood_func, observations[i], new_particles)
         likelihoods[i] = likelihood
         initial_particles = continuous_stratified_resample(
             normalized_weights, new_particles)
@@ -101,13 +89,13 @@ def initial_particle(N):
 # likelihood function
 
 
-def likelihood_function(y, x, eta):
-    return norm.logpdf(y, loc=rho * np.exp(x / 2) * eta, scale=np.sqrt((1 - rho ** 2) * np.exp(x)))
+def likelihood_function(y, x):
+    return norm.logpdf(y, loc=0, scale=np.sqrt((1 - rho ** 2) * np.exp(x) + (rho * np.exp(x / 2)) ** 2))
 
 
 # transition function
-def transition_sample(x, eta):
-    return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * eta
+def transition_sample(x):
+    return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * np.random.randn(1)
 
 
 # parameters

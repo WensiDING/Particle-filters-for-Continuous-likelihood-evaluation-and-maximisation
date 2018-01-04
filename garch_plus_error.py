@@ -5,26 +5,27 @@ from scipy.stats import norm
 # and the normalized weights for resampling step
 
 
-def importance_ratio(likelihood_func, y, xs, eta):
-    log_weights = [likelihood_func(y, x, eta) for x in xs]
+def importance_ratio(likelihood_func, y, xs):
+    log_weights = [likelihood_func(y, x) for x in xs]
     maximum = np.max(log_weights)
     weights_ratio = np.exp(log_weights - maximum)
     likelihood = np.mean(weights_ratio) * np.exp(maximum)
     normalized_weights = weights_ratio / sum(weights_ratio)
     return likelihood, normalized_weights
 
-
-def importance_ratio_vect(likelihood_func, y, xs, eta):
-    log_weights = np.zeros(len(xs))
-    for i in range(len(xs)):
-        log_weights[i] = likelihood_func(y, xs[i], eta[i])
-    # log_weights = [likelihood_func(y, x, eta) for x in xs]
-    maximum = np.max(log_weights)
-    weights_ratio = np.exp(log_weights - maximum)
-    likelihood = np.mean(weights_ratio) * np.exp(maximum)
-    normalized_weights = weights_ratio / sum(weights_ratio)
-    return likelihood, normalized_weights
 # resampling methods
+
+
+def stratified_resample(weights, xs):
+    n = len(weights)
+    indices = []
+    C = [0.] + [sum(weights[:i + 1]) for i in range(n)]
+    u0, j = np.random.uniform(size=1), 0
+    for u in [(u0 + i) / n for i in range(n)]:
+        while u > C[j]:
+            j += 1
+        indices.append(j - 1)
+    return [xs[ind] for ind in indices]
 
 
 def continuous_stratified_resample(weights, xs):
@@ -66,11 +67,11 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
     likelihoods = np.zeros(T)
     new_particles = np.zeros(N)
     for i in range(T):
-        eta = np.random.randn(N)
         for j in range(N):
-            new_particles[j] = transition(initial_particles[j], eta[j])
-        likelihood, normalized_weights = importance_ratio_vect(
-            likelihood_func, observations[i], new_particles, eta)
+            new_particles[j] = transition(
+                initial_particles[j], observations[i])
+        likelihood, normalized_weights = importance_ratio(
+            likelihood_func, observations[i], new_particles)
         likelihoods[i] = likelihood
         initial_particles = continuous_stratified_resample(
             normalized_weights, new_particles)
@@ -83,15 +84,17 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
 # AR(1) sample generator
 
 
-def generator_sv_with_leverage(mu=0.5, phi=0.975, sigma_eta_square=0.02, rho=-0.8, T=1000, seed=2345):
+def generator_garch_plus_error(sigma=0.1, beta_0=0.01, beta_1=0.2, beta_2=0.75, T=T, seed=2345):
     np.random.seed(seed=seed)
     x = 0
     ys = np.zeros(T)
+    sigma_t_square = 0
     for i in range(T):
-        eta_t = np.random.randn(1)
-        x = mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * eta_t
-        ys[i] = rho * np.exp(x / 2) * eta_t + np.random.randn(1) * \
-            np.sqrt((1 - rho ** 2) * np.exp(x))
+        ys[i] = np.random.randn(1) * np.sqrt(sigma**2 + sigma_t_square)
+        b_square = (sigma**2) * (sigma_t_square) / (sigma**2 + sigma_t_square)
+        x = b_square * ys[i] / (sigma**2) + \
+            np.random.randn(1) * np.sqrt(b_square)
+        sigma_t_square = beta_0 + beta_1 * (x**2) + beta_2 * sigma_t_square
     print('sample generated with success !')
     return ys
 
@@ -104,31 +107,34 @@ def initial_particle(N):
 # likelihood function
 
 
-def likelihood_function(y, x, eta):
-    return norm.logpdf(y, loc=rho * np.exp(x / 2) * eta, scale=np.sqrt((1 - rho ** 2) * np.exp(x)))
+def likelihood_function(y, sigma_t_square):
+    return norm.logpdf(y, loc=0, scale=np.sqrt(sigma_t_square + sigma**2))
 
 
 # transition function
-def transition_sample(x, eta):
-    return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * eta
+def transition_sample(sigma_t_square, y):
+    b_square = (sigma**2) * (sigma_t_square) / (sigma**2 + sigma_t_square)
+    x = b_square * y / (sigma**2) + np.random.randn(1) * np.sqrt(b_square)
+    return beta_0 + beta_1 * (x**2) + beta_2 * sigma_t_square
 
 
 # parameters
-mu_0 = 0.5
-phi_0 = 0.975
-sigma_eta_square_0 = 0.02
-rho_0 = -0.8
+sigma_0 = 0.1
+beta_0_0 = 0.01
+beta_1_0 = 0.2
+beta_2_0 = 0.75
 
 
-phi = 0.975
-sigma_eta_square = 0.02
-rho = -0.8
+sigma = 0.1
+beta_0 = 0.01
+beta_1 = 0.2
+beta_2 = 0.75
 
-T = 1000
-N = 300
+T = 500
+N = 500
 
-observations = generator_sv_with_leverage(
-    mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
+observations = generator_garch_plus_error(
+    sigma=sigma_0, beta_0=beta_0_0, beta_1=beta_1_0, beta_2=beta_2_0, T=T)
 
 initial_particles = initial_particle(N=N)
 
@@ -138,7 +144,7 @@ initial_particles = initial_particle(N=N)
 # print(loglikelihood)
 
 # a list of testing mu values
-mus = [i * 0.02 for i in range(17, 34)]
+mus = [i * 0.05 for i in range(6, 14)]
 loglikelihoods = np.zeros(len(mus))
 
 for k in range(len(mus)):

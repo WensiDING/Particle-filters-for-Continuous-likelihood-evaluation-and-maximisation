@@ -1,6 +1,7 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
-
+import matplotlib.pyplot as plt
 # return the mean value of non-normalized weights for loglikelihood estimation
 # and the normalized weights for resampling step
 
@@ -17,6 +18,9 @@ def importance_ratio(likelihood_func, y, xs):
 
 
 def continuous_stratified_resample(weights, xs):
+    order = np.argsort(xs)
+    weights = weights[order]
+    xs = xs[order]
     n = len(weights)
     # generate n uniform rvs with stratified method
     u0 = np.random.uniform(size=1)
@@ -57,6 +61,7 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
         likelihood, normalized_weights = importance_ratio(
             likelihood_func, observations[i], new_particles)
         likelihoods[i] = likelihood
+        # print(likelihood)
         initial_particles = continuous_stratified_resample(
             normalized_weights, new_particles)
         # print('time step {} finished with likelihood {}'.format(i, likelihood))
@@ -97,7 +102,7 @@ def likelihood_function(y, x):
 def transition_sample(x):
     return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * np.random.randn(1)
 
-
+# simulated sample
 # parameters
 mu_0 = 0.5
 phi_0 = 0.975
@@ -110,19 +115,39 @@ sigma_eta_square = 0.02
 rho = -0.8
 
 T = 1000
-N = 300
-
+N = 800
 observations = generator_sv_with_leverage(
     mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
 
+
+# mus = [i * 0.01 for i in range(10, 38)]
+# # S&P 500 Historical data
+# # parameters
+# phi = 0.98
+# sigma_eta_square = 0.03
+# rho = 0
+# T = 2000
+# N = 500
+# sp = pd.read_csv('S&P 500 Historical Data.csv')
+# sp = sp.set_index('Date')
+# sp.index = pd.to_datetime(sp.index)
+# close_price = np.asarray(sp['19950515':'20030424']['Close'])
+# dr2000 = (close_price[1:] - close_price[:2000]) / close_price[:2000]
+
+# observations = dr2000
+# print(observations)
+# plt.hist(observations)
+# plt.show()
+
+
 initial_particles = initial_particle(N=N)
+
 
 # likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
 #                               likelihood_func=likelihood_function, transition=transition_sample, N=N)
 # loglikelihood = sum(np.log(likelihoods))
 # print(loglikelihood)
 
-# a list of testing mu values
 mus = [i * 0.02 for i in range(17, 34)]
 loglikelihoods = np.zeros(len(mus))
 

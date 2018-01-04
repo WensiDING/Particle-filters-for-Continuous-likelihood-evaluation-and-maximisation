@@ -65,6 +65,23 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
         # print('time step {} finished with likelihood {}'.format(i, likelihood))
     return likelihoods
 
+# def particle_filter(observations, initial_particles, likelihood_func, transition, N, seed=1234):
+#     np.random.seed(seed=seed)
+#     T = len(observations)
+#     likelihoods = np.zeros(T)
+#     for i in range(T):
+#         initial_particles = np.sort(initial_particles)
+#         likelihood, normalized_weights = importance_ratio(
+#             likelihood_func, observations[i], initial_particles)
+#         likelihoods[i] = likelihood
+#         # print(likelihood)
+#         initial_particles = continuous_stratified_resample(
+#             normalized_weights, initial_particles)
+#         for j in range(N):
+#             initial_particles[j] = transition(
+#                 initial_particles[j], observations[i])
+#         # print('time step {} finished with likelihood {}'.format(i, likelihood))
+#     return likelihoods
 
 # AR(1) model
 
@@ -93,10 +110,15 @@ def initial_particle(N):
 
 
 def likelihood_function(y, x):
-    return norm.logpdf(y, loc=0, scale=np.sqrt((1 - rho ** 2) * np.exp(x) + (rho * np.exp(x / 2)) ** 2))
-
+    return norm.logpdf(y, loc=0, scale=np.exp(x / 2))
 
 # transition function
+
+
+# def transition_sample(x):
+# return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) *
+# np.random.randn(1)
+
 def transition_sample(x):
     return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * np.random.randn(1)
 

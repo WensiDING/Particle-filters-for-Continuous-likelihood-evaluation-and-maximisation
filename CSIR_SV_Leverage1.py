@@ -18,9 +18,6 @@ def importance_ratio(likelihood_func, y, xs):
 
 
 def continuous_stratified_resample(weights, xs):
-    order = np.argsort(xs)
-    weights = weights[order]
-    xs = xs[order]
     n = len(weights)
     # generate n uniform rvs with stratified method
     u0 = np.random.uniform(size=1)
@@ -58,6 +55,7 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
     for i in range(T):
         for j in range(N):
             new_particles[j] = transition(initial_particles[j])
+        new_particles = np.sort(new_particles)
         likelihood, normalized_weights = importance_ratio(
             likelihood_func, observations[i], new_particles)
         likelihoods[i] = likelihood
@@ -115,7 +113,7 @@ sigma_eta_square = 0.02
 rho = -0.8
 
 T = 1000
-N = 800
+N = 300
 observations = generator_sv_with_leverage(
     mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
 

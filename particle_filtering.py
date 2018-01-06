@@ -33,8 +33,13 @@ def continuous_stratified_resample(weights, xs):
     # generate n uniform rvs with stratified method
     u0 = np.random.uniform(size=1)
     u = [(u0 + i) / n for i in range(n)]
+    pi = np.zeros(n + 1)
+    pi[0] = weights[0] / 2
+    pi[n] = weights[-1] / 2
+    for i in range(1, n):
+        pi[i] = (weights[i] + weights[i - 1]) / 2
     # algo described in the paper A.3.
-    pi = np.append(0, weights)
+    # pi = np.append(0, weights)
     r = np.zeros(n)
     u_new = np.zeros(n)
     s = 0
@@ -46,6 +51,8 @@ def continuous_stratified_resample(weights, xs):
             r[j - 1] = i
             u_new[j - 1] = (u[j - 1] - (s - pi[i])) / pi[i]
             j = j + 1
+
+    r = r.astype(int)
 
     x_new = np.zeros(n)
     for k in range(n):
@@ -121,9 +128,10 @@ sigma_epsilon_square = 2
 sigma_eta_square = 0.02
 phi = 0.975
 
+# T = 5000
+# N = 3500
 T = 5000
-N = 3500
-
+N = 300
 observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
                               sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
 

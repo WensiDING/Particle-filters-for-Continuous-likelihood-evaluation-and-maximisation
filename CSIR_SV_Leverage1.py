@@ -130,28 +130,33 @@ def transition_sample(x, eta):
 # T = 1000
 # N = 300
 
-# observations = generator_sv_with_leverage(
-#     mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
 
-
-# mus = [i * 0.02 for i in range(8,18)]
-mus = [i*0.02 for i in range(5,15)]
+mus = [i * 0.02 for i in range(8,18)]
+# mus = [i*0.02 for i in range(5,15)]
 # S&P 500 Historical data
 # parameters
 phi = 0.975
 sigma_eta_square = 0.025
-rho = 0
+rho = -0.8
 T = 2000
 N = 500
+# mu=0.17
+# observations = generator_sv_with_leverage(
+#     mu=mu, phi=phi, sigma_eta_square=sigma_eta_square, rho=rho, T=T)
+
+# plt.plot(observations)
+# plt.show()
+
 sp = pd.read_csv('S&P 500 Historical Data.csv')
 sp = sp.set_index('Date')
 sp.index = pd.to_datetime(sp.index)
 close_price = np.asarray(sp['19950515':'20030424']['Close'])
+
 dr2000 = (close_price[1:] - close_price[:2000]) / close_price[:2000]
 
-observations = dr2000
-# print(observations)
-# plt.hist(observations)
+observations = dr2000*100
+
+# plt.plot(observations)
 # plt.show()
 
 cumulated_likelihoods = np.zeros((50,len(mus)))

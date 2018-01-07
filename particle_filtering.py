@@ -69,16 +69,15 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
     np.random.seed(seed=seed)
     T = len(observations)
     likelihoods = np.zeros(T)
-    new_particles = np.zeros(N)
     for i in range(T):
-        for j in range(N):
-            new_particles[j] = transition(initial_particles[j])
-        new_particles = np.sort(new_particles)
+        initial_particles = np.sort(initial_particles)
         likelihood, normalized_weights = importance_ratio(
-            likelihood_func, observations[i], new_particles)
+            likelihood_func, observations[i], initial_particles)
         likelihoods[i] = likelihood
         initial_particles = continuous_stratified_resample(
-            normalized_weights, new_particles)
+            normalized_weights, initial_particles)
+        for j in range(N):
+            initial_particles[j] = transition(initial_particles[j])
         # print('time step {} finished with likelihood {}'.format(i, likelihood))
     return likelihoods
 
@@ -130,12 +129,11 @@ phi = 0.975
 
 # T = 5000
 # N = 3500
-T = 5000
+T = 150
 N = 300
 observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
                               sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
 
-initial_particles = initial_particle(N=N)
 
 # likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
 #                               likelihood_func=likelihood_function, transition=transition_sample, N=N)
@@ -143,16 +141,25 @@ initial_particles = initial_particle(N=N)
 # print(loglikelihood)
 
 # a list of testing mu values
-mus = [i * 0.03 for i in range(11, 23)]
-loglikelihoods = np.zeros(len(mus))
+mus = [i * 0.05 for i in range(6, 20)]
 
-for k in range(len(mus)):
-    mu = mus[k]
-    likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
-                                  likelihood_func=likelihood_function, transition=transition_sample, N=N)
-    loglikelihood = sum(np.log(likelihoods))
-    loglikelihoods[k] = loglikelihood
-    print('log-likelihood calculation finished for mu = {} : {}'.format(mu, loglikelihood))
-print(loglikelihoods)
-plt.plot(mus, loglikelihoods)
+estimations = np.zeros(50)
+for seed in range(50):
+    print('iteration {}'.format(seed))
+    initial_particles = initial_particle(N=N)
+    loglikelihoods = np.zeros(len(mus))
+    for k in range(len(mus)):
+        mu = mus[k]
+        likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
+                                      likelihood_func=likelihood_function, transition=transition_sample, N=N,seed=seed)
+        loglikelihood = sum(np.log(likelihoods))
+        loglikelihoods[k] = loglikelihood
+        print('log-likelihood calculation finished for mu = {} : {}'.format(mu, loglikelihood))
+    print(loglikelihoods)
+    # plt.plot(mus, loglikelihoods)
+    # plt.show()
+
+    estimations[seed] = mus[np.argmax(loglikelihoods)]
+print(estimations)
+plt.hist(estimations)
 plt.show()

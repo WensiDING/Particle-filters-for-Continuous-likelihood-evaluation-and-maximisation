@@ -115,49 +115,55 @@ def transition_sample(x, eta):
     return mu * (1 - phi) + phi * x + np.sqrt(sigma_eta_square) * eta
 
 
-# # simulated sample
-# # parameters
-# mu_0 = 0.5
-# phi_0 = 0.975
-# sigma_eta_square_0 = 0.02
-# rho_0 = -0.8
-
-
-# phi = 0.975
-# sigma_eta_square = 0.02
-# rho = -0.8
-
-# T = 1000
-# N = 300
-
-# observations = generator_sv_with_leverage(
-#     mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
-
-
-# mus = [i * 0.02 for i in range(8,18)]
-mus = [i*0.02 for i in range(5,15)]
-# S&P 500 Historical data
+# simulated sample
 # parameters
-phi = 0.975
-sigma_eta_square = 0.025
-rho = 0
-T = 2000
-N = 500
-sp = pd.read_csv('S&P 500 Historical Data.csv')
-sp = sp.set_index('Date')
-sp.index = pd.to_datetime(sp.index)
-close_price = np.asarray(sp['19950515':'20030424']['Close'])
-dr2000 = (close_price[1:] - close_price[:2000]) / close_price[:2000]
+mu_0 = 0.5
+phi_0 = 0.975
+sigma_eta_square_0 = 0.02
+rho_0 = -0.8
 
-observations = dr2000
+
+phi = 0.975
+sigma_eta_square = 0.02
+rho = -0.8
+
+T = 1000
+N = 300
+
+observations = generator_sv_with_leverage(
+    mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
+
+
+# mus = [i * 0.01 for i in range(10, 38)]
+# # S&P 500 Historical data
+# # parameters
+# phi = 0.98
+# sigma_eta_square = 0.03
+# rho = 0
+# T = 2000
+# N = 500
+# sp = pd.read_csv('S&P 500 Historical Data.csv')
+# sp = sp.set_index('Date')
+# sp.index = pd.to_datetime(sp.index)
+# close_price = np.asarray(sp['19950515':'20030424']['Close'])
+# dr2000 = (close_price[1:] - close_price[:2000]) / close_price[:2000]
+
+# observations = dr2000
 # print(observations)
 # plt.hist(observations)
 # plt.show()
 
+
+
+# likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
+#                               likelihood_func=likelihood_function, transition=transition_sample, N=N)
+# loglikelihood = sum(np.log(likelihoods))
+# print(loglikelihood)
+mus = [i * 0.05 for i in range(6, 16)]
 cumulated_likelihoods = np.zeros((50,len(mus)))
 estimations = np.zeros(50)
 for seed in range(50):
-    print('iteration {}, rho {}'.format(seed,rho))
+    print('iteration {}'.format(seed))
     initial_particles = initial_particle(N=N)
 
     loglikelihoods = np.zeros(len(mus))

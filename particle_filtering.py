@@ -127,39 +127,45 @@ sigma_epsilon_square = 2
 sigma_eta_square = 0.02
 phi = 0.975
 
-# T = 5000
-# N = 3500
-T = 150
-N = 300
+T = 5000
+N = 3500
+# T = 150
+# N = 300
 observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
                               sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
 
-
-# likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
-#                               likelihood_func=likelihood_function, transition=transition_sample, N=N)
-# loglikelihood = sum(np.log(likelihoods))
-# print(loglikelihood)
-
-# a list of testing mu values
-mus = [i * 0.05 for i in range(6, 20)]
-
-estimations = np.zeros(50)
-for seed in range(50):
-    print('iteration {}'.format(seed))
-    initial_particles = initial_particle(N=N)
-    loglikelihoods = np.zeros(len(mus))
-    for k in range(len(mus)):
-        mu = mus[k]
-        likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
-                                      likelihood_func=likelihood_function, transition=transition_sample, N=N,seed=seed)
-        loglikelihood = sum(np.log(likelihoods))
-        loglikelihoods[k] = loglikelihood
-        print('log-likelihood calculation finished for mu = {} : {}'.format(mu, loglikelihood))
-    print(loglikelihoods)
-    # plt.plot(mus, loglikelihoods)
-    # plt.show()
-
-    estimations[seed] = mus[np.argmax(loglikelihoods)]
-print(estimations)
-plt.hist(estimations)
+mus = [i*0.03 for i in range(11,23)]
+initial_particles = initial_particle(N=N)
+loglikelihoods = np.zeros(len(mus))
+for i in range(len(mus)):
+    mu = mus[i]
+    likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
+                                  likelihood_func=likelihood_function, transition=transition_sample, N=N)
+    loglikelihood = sum(np.log(likelihoods))
+    loglikelihoods[i] = loglikelihood
+    print('loglikelihood for mu {} : {}'.format(mu,loglikelihood))
+print(loglikelihoods)
+plt.plot(mus,loglikelihoods)
 plt.show()
+# a list of testing mu values
+
+# estimations = np.zeros(50)
+# for seed in range(50):
+#     print('iteration {}'.format(seed))
+#     initial_particles = initial_particle(N=N)
+#     loglikelihoods = np.zeros(len(mus))
+#     for k in range(len(mus)):
+#         mu = mus[k]
+#         likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
+#                                       likelihood_func=likelihood_function, transition=transition_sample, N=N,seed=seed)
+#         loglikelihood = sum(np.log(likelihoods))
+#         loglikelihoods[k] = loglikelihood
+#         print('log-likelihood calculation finished for mu = {} : {}'.format(mu, loglikelihood))
+#     print(loglikelihoods)
+#     # plt.plot(mus, loglikelihoods)
+#     # plt.show()
+
+#     estimations[seed] = mus[np.argmax(loglikelihoods)]
+# print(estimations)
+# plt.hist(estimations)
+# plt.show()

@@ -13,6 +13,18 @@ N = 300
  -9034.52999868 -9035.6215629
 
 N = 3500
+loglikelihood for mu 0.32999999999999996 : -9033.030943189318
+loglikelihood for mu 0.36 : -9032.282766845847
+loglikelihood for mu 0.39 : -9031.665237712048
+loglikelihood for mu 0.42 : -9031.181088692925
+loglikelihood for mu 0.44999999999999996 : -9030.827604405602
+loglikelihood for mu 0.48 : -9030.607070389278
+loglikelihood for mu 0.51 : -9030.517142788396
+loglikelihood for mu 0.54 : -9030.557501247704
+loglikelihood for mu 0.57 : -9030.730575483138
+loglikelihood for mu 0.6 : -9031.03372300347
+loglikelihood for mu 0.63 : -9031.468444007794
+
 
 ### SV with leverage Model
 mu_0 = 0.5

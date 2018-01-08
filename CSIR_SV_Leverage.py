@@ -128,7 +128,7 @@ sigma_eta_square = 0.02
 rho = -0.8
 
 T = 1000
-N = 300
+N = 600
 
 observations = generator_sv_with_leverage(
     mu=mu_0, phi=phi_0, sigma_eta_square=sigma_eta_square_0, rho=rho_0, T=T)
@@ -160,9 +160,9 @@ observations = generator_sv_with_leverage(
 # loglikelihood = sum(np.log(likelihoods))
 # print(loglikelihood)
 mus = [i * 0.05 for i in range(6, 16)]
-cumulated_likelihoods = np.zeros((50,len(mus)))
-estimations = np.zeros(50)
-for seed in range(50):
+cumulated_likelihoods = np.zeros((25,len(mus)))
+estimations = np.zeros(25)
+for seed in range(25,50):
     print('iteration {}'.format(seed))
     initial_particles = initial_particle(N=N)
 
@@ -179,8 +179,8 @@ for seed in range(50):
     print(loglikelihoods)
     # plt.plot(mus, loglikelihoods)
     # plt.show()
-    estimations[seed] = mus[np.argmax(loglikelihoods)]
-    cumulated_likelihoods[seed,:] = loglikelihoods
+    estimations[seed-25] = mus[np.argmax(loglikelihoods)]
+    cumulated_likelihoods[seed-25,:] = loglikelihoods
 print(estimations)
 plt.hist(estimations)
 plt.show()

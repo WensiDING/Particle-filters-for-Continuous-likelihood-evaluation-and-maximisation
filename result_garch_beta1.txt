@@ -1,0 +1,1 @@
+beta1s = [i * 0.05 for i in range(9)]

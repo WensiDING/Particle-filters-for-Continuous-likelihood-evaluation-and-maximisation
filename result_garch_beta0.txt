@@ -1,0 +1,2 @@
+
+beta0s = [i * 0.002 for i in range(10)]

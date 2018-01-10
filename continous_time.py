@@ -36,6 +36,14 @@ def importance_ratio(likelihood_func, y, sigma_hat, new_particles):
     normalized_weights = weights_ratio / sum(weights_ratio)
     return likelihood, normalized_weights
 
+# def importance_ratio(likelihood_func, y, sigma_hat, new_particles):
+#     log_weights = [likelihood_func(y, x) for x in sigma_hat]
+#     maximum = np.max(log_weights)
+#     weights_ratio = np.exp(log_weights - maximum)
+#     likelihood = np.mean(weights_ratio) * np.exp(maximum)
+#     normalized_weights = weights_ratio / sum(weights_ratio)
+#     return likelihood, normalized_weights
+
 
 def kernel_distance(new_particles):
     num = len(new_particles)
@@ -107,6 +115,8 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
         likelihoods[i] = likelihood
         initial_particles = continuous_stratified_resample(
             normalized_weights, new_particles)
+        # print(new_particles)
+        # print(initial_particles)
         # print('time step {} finished with likelihood {}'.format(i, likelihood))
     return likelihoods
 
@@ -181,12 +191,12 @@ xi = 0.0178
 
 # n = 4000
 # N = 1000
-n = 4000
-N = 1000
+n = 40
+N = 10
 Ms = 20
 delta = delta_s / Ms
 # kernel smothing parameters
-c = 1
+c = 1e-3
 h = c / N
 # T = 150
 # N = 300
@@ -195,6 +205,7 @@ observations = generator(k=k_0, theta=theta_0, xi=xi_0, n=n, delta_s=delta_s)
 # plt.show()
 
 thetas = [0.1 * i for i in range(2, 8)]
+loglikelihoods = np.zeros(len(thetas))
 for i in range(len(thetas)):
     theta = thetas[i]
     alpha = 1 + 2 * k / xi
@@ -203,7 +214,9 @@ for i in range(len(thetas)):
     likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
                                   likelihood_func=likelihood_function, transition=transition_sample, n=n)
     loglikelihood = sum(np.log(likelihoods))
+    loglikelihoods[i] = loglikelihood
     print(loglikelihood)
+print(loglikelihoods)
 # beta2s = [i * 0.05 for i in range(10, 20)]
 # initial_particles = initial_particle(N=N)
 # loglikelihoods = np.zeros(len(beta2s))

@@ -121,11 +121,6 @@ def particle_filter(observations, initial_particles, likelihood_func, transition
     return likelihoods
 
 
-# AR(1) model
-
-# AR(1) sample generator
-
-
 def generator(k=0.02, theta=0.5, xi=0.0178, delta_s=0.01, n=4000, seed=2345):
     np.random.seed(seed=seed)
     sigma_square = beta_0 / (alpha_0 - 1)
@@ -150,20 +145,6 @@ def likelihood_function(y, sigma_hat):
     return norm.logpdf(y, loc=0, scale=np.sqrt(sigma_hat))
 
 
-# transition function
-# def transition_sample(sigma_square):
-#     sigma_square_array = np.zeros(Ms)
-#     sigma_square_array[0] = sigma_square
-#     for i in range(1, Ms + 1):
-#         a = k * (theta - sigma_square_array[i - 1])
-#         b = np.sqrt(xi) * sigma_square_array[i - 1]
-#         if i < Ms:
-#             sigma_square_array[i] = sigma_square_array[i - 1] + \
-#                 a * delta + b * np.sqrt(delta) * np.random.randn(1)
-#         else:
-#             sigma_square_new = sigma_square_array[i - 1] + \
-#                 a * delta + b * np.sqrt(delta) * np.random.randn(1)
-#     return sigma_square_array, sigma_square_new
 def transition_sample(sigma_square):
     sigma_square_array = np.zeros(Ms + 1)
     sigma_square_array[0] = sigma_square
@@ -183,16 +164,16 @@ beta_0 = 2 * k_0 * theta_0 / xi_0
 delta_s = 1
 
 
-k = 0.02
-# theta = 0.5
+# k = 0.02
+theta = 0.5
 xi = 0.0178
 # alpha = 1 + 2 * k / xi
 # beta = 2 * k * theta / xi
 
 # n = 4000
 # N = 1000
-n = 40
-N = 10
+n = 1000
+N = 600
 Ms = 20
 delta = delta_s / Ms
 # kernel smothing parameters
@@ -203,20 +184,26 @@ h = c / N
 observations = generator(k=k_0, theta=theta_0, xi=xi_0, n=n, delta_s=delta_s)
 # plt.plot(observations)
 # plt.show()
+for seed in range(3):
+    print('iteration {} :'.format(seed))
+    ks = [0.005 * i for i in range(1, 13)]
+    # thetas = [0.05 * i for i in range(5, 15)]
+    # xis = [0.005 * i for i in range(1, 13)]
+    loglikelihoods = np.zeros(len(ks))
+    for i in range(len(ks)):
+        k = ks[i]
+        # k = ks[i]
+        # xi = xis[i]
+        alpha = 1 + 2 * k / xi
+        beta = 2 * k * theta / xi
+        initial_particles = initial_particle(N=N)
+        likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
+                                      likelihood_func=likelihood_function, transition=transition_sample, n=n, seed=seed)
+        loglikelihood = sum(np.log(likelihoods))
+        loglikelihoods[i] = loglikelihood
+        print('k {} : loglikelihood {}'.format(k, loglikelihood))
+    print(loglikelihoods)
 
-thetas = [0.1 * i for i in range(2, 8)]
-loglikelihoods = np.zeros(len(thetas))
-for i in range(len(thetas)):
-    theta = thetas[i]
-    alpha = 1 + 2 * k / xi
-    beta = 2 * k * theta / xi
-    initial_particles = initial_particle(N=N)
-    likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
-                                  likelihood_func=likelihood_function, transition=transition_sample, n=n)
-    loglikelihood = sum(np.log(likelihoods))
-    loglikelihoods[i] = loglikelihood
-    print(loglikelihood)
-print(loglikelihoods)
 # beta2s = [i * 0.05 for i in range(10, 20)]
 # initial_particles = initial_particle(N=N)
 # loglikelihoods = np.zeros(len(beta2s))

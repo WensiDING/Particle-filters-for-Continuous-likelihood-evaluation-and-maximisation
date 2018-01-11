@@ -233,5 +233,6 @@ def main():
     plt.plot(mus, log_likelihoods)
     plt.show()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

@@ -129,6 +129,7 @@ class Kalman_Filter(object):
 
     @staticmethod
     def compute_log_likelihood(Y, mu0, V0, A, b, V, V_epi):
+        '''A static version for computing log-likelihood for a given set of model parameters without using class instance'''
         Y = np.array(Y)
         T = Y.shape[0]
         mu_alpha = np.zeros(T)
@@ -191,42 +192,46 @@ def generator_ar_1(sigma_epsilon_square=2, sigma_eta_square=0.02, phi=0.975, mu=
     print('sample generated with success !')
     return ys
 
-# parameters
-sigma_epsilon_square_0 = 2
-sigma_eta_square_0 = 0.02
-phi_0 = 0.975
-mu_0 = 0.5
+def main()
+    # parameters
+    sigma_epsilon_square_0 = 2
+    sigma_eta_square_0 = 0.02
+    phi_0 = 0.975
+    mu_0 = 0.5
 
 
-# T = 5000
-# N = 3500
-T = 5000
-N = 600
-observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
-                              sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
+    # T = 5000
+    # N = 3500
+    T = 5000
+    N = 600
+    observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
+                                  sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
 
-mus = [i*0.03 for i in range(10,30)]
-log_likelihoods = []
-for mu in mus:
-    A = phi_0
-    b = (1 - phi_0) * mu
-    log_lkh = Kalman_Filter.compute_log_likelihood(Y=observations,
-                                    mu0=0, 
-                                    V0=1, 
-                                    A=A, 
-                                    b=b, 
-                                    V=sigma_eta_square_0,
-                                    V_epi=sigma_epsilon_square_0)
-    print("mu= %0.2f" % mu, " log-lokelihood= %0.3f" % log_lkh)
-    log_likelihoods.append(log_lkh)
+    mus = [i*0.03 for i in range(10,30)]
+    log_likelihoods = []
+    for mu in mus:
+        A = phi_0
+        b = (1 - phi_0) * mu
+        log_lkh = Kalman_Filter.compute_log_likelihood(Y=observations,
+                                        mu0=0, 
+                                        V0=1, 
+                                        A=A, 
+                                        b=b, 
+                                        V=sigma_eta_square_0,
+                                        V_epi=sigma_epsilon_square_0)
+        print("mu= %0.2f" % mu, " log-lokelihood= %0.3f" % log_lkh)
+        log_likelihoods.append(log_lkh)
 
-# kalman_filter = Kalman_Filter(V_epi=sigma_epsilon_square_0, 
-#                               mu0=0, 
-#                               V0=1, 
-#                               A=1, 
-#                               b=1, 
-#                               V=1)
-# kalman_filter.fit(Y=observations, epsilon=1e-4, n_iter=1000)
-plt.figure()
-plt.plot(mus, log_likelihoods)
-plt.show()
+    # kalman_filter = Kalman_Filter(V_epi=sigma_epsilon_square_0, 
+    #                               mu0=0, 
+    #                               V0=1, 
+    #                               A=1, 
+    #                               b=1, 
+    #                               V=1)
+    # kalman_filter.fit(Y=observations, epsilon=1e-4, n_iter=1000)
+    plt.figure()
+    plt.plot(mus, log_likelihoods)
+    plt.show()
+
+if '__name__' == '__main__':
+    main()

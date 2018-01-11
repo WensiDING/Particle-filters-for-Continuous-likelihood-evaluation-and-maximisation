@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 # and the normalized weights for resampling step
 
 
-def importance_ratio(likelihood_func, y, xs):
-    log_weights = [likelihood_func(y, x) for x in xs]
+def importance_ratio(likelihood_func, y, xs, sigma_epsilon_square):
+    log_weights = [likelihood_func(y, x, sigma_epsilon_square) for x in xs]
     maximum = np.max(log_weights)
     weights_ratio = np.exp(log_weights - maximum)
     likelihood = np.mean(weights_ratio) * np.exp(maximum)
@@ -65,19 +65,19 @@ def continuous_stratified_resample(weights, xs):
     return x_new
 
 
-def particle_filter(observations, initial_particles, likelihood_func, transition, N, seed=1234):
+def particle_filter(observations, initial_particles, likelihood_func, transition, N, mu, phi, sigma_eta_square, sigma_epsilon_square, seed=1234):
     np.random.seed(seed=seed)
     T = len(observations)
     likelihoods = np.zeros(T)
     for i in range(T):
         initial_particles = np.sort(initial_particles)
         likelihood, normalized_weights = importance_ratio(
-            likelihood_func, observations[i], initial_particles)
+            likelihood_func, observations[i], initial_particles, sigma_epsilon_square)
         likelihoods[i] = likelihood
         initial_particles = continuous_stratified_resample(
             normalized_weights, initial_particles)
         for j in range(N):
-            initial_particles[j] = transition(initial_particles[j])
+            initial_particles[j] = transition(initial_particles[j], mu=mu, phi=phi, sigma_eta_square=sigma_eta_square)
         # print('time step {} finished with likelihood {}'.format(i, likelihood))
     return likelihoods
 
@@ -107,12 +107,12 @@ def initial_particle(N):
 # likelihood function
 
 
-def likelihood_function(y, x):
+def likelihood_function(y, x, sigma_epsilon_square):
     return norm.logpdf(y, loc=x, scale=np.sqrt(sigma_epsilon_square))
 
 
 # transition function
-def transition_sample(x):
+def transition_sample(x, mu, phi, sigma_eta_square):
     return (x - mu) * phi + mu + np.random.randn(1) * np.sqrt(sigma_eta_square)
 
 
@@ -126,14 +126,14 @@ def main():
     mu_0 = 0.5
 
 
-    sigma_epsilon_square = 2
-    sigma_eta_square = 0.02
-    phi = 0.975
+    #sigma_epsilon_square = 2
+    #sigma_eta_square = 0.02
+    #phi = 0.975
 
     # T = 5000
     # N = 3500
     T = 150
-    N = 600
+    N = 300
     observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
                                   sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
     initial_particles = initial_particle(N=N)
@@ -159,8 +159,15 @@ def main():
         loglikelihoods = np.zeros(len(mus))
         for k in range(len(mus)):
             mu = mus[k]
-            likelihoods = particle_filter(observations=observations, initial_particles=initial_particles,
-                                          likelihood_func=likelihood_function, transition=transition_sample, N=N,seed=seed)
+            likelihoods = particle_filter(observations=observations, 
+                                          initial_particles=initial_particles,
+                                          likelihood_func=likelihood_function, 
+                                          transition=transition_sample, 
+                                          mu=mu,
+                                          phi=phi_0,
+                                          sigma_eta_square=sigma_eta_square_0,
+                                          sigma_epsilon_square=sigma_epsilon_square_0,
+                                          N=N,seed=seed)
             loglikelihood = sum(np.log(likelihoods))
             loglikelihoods[k] = loglikelihood
             # print('log-likelihood calculation finished for mu = {} : {}'.format(mu, loglikelihood))
@@ -182,5 +189,5 @@ def main():
     plt.show()
 
 
-if '__name__' == '__main__':
+if __name__ == "__main__":
     main()

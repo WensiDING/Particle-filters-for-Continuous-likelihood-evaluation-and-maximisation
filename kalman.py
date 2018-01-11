@@ -130,6 +130,7 @@ class Kalman_Filter(object):
     @staticmethod
     def compute_log_likelihood(Y, mu0, V0, A, b, V, V_epi):
         '''A static version for computing log-likelihood for a given set of model parameters without using class instance'''
+        print('Begin compute likelihoods by kalman_filter')
         Y = np.array(Y)
         T = Y.shape[0]
         mu_alpha = np.zeros(T)
@@ -150,7 +151,7 @@ class Kalman_Filter(object):
                 mu_alpha[t] = nom / denom
                 V_alpha[t] = V_epi * sigma2_tmp / denom
                 ct[t] = norm.pdf(y, loc=A*mu_alpha[t-1]+b, scale=np.sqrt(denom))
-        return np.sum(np.log(ct))
+        return np.sum(np.log(ct)), ct
 
 #     @classmethod
 #     def compute_log_likelihood(Y, t, ct, mu_alpha, V_alpha, mu0, V0, V_epi, A):
@@ -212,7 +213,7 @@ def main():
     for mu in mus:
         A = phi_0
         b = (1 - phi_0) * mu
-        log_lkh = Kalman_Filter.compute_log_likelihood(Y=observations,
+        log_lkh, _ = Kalman_Filter.compute_log_likelihood(Y=observations,
                                         mu0=0, 
                                         V0=1, 
                                         A=A, 

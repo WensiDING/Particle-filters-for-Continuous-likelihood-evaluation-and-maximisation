@@ -1,1 +1,0 @@
-loglikelihood = -3045.59278019

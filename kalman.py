@@ -192,7 +192,7 @@ def generator_ar_1(sigma_epsilon_square=2, sigma_eta_square=0.02, phi=0.975, mu=
     print('sample generated with success !')
     return ys
 
-def main()
+def main():
     # parameters
     sigma_epsilon_square_0 = 2
     sigma_eta_square_0 = 0.02
@@ -233,5 +233,5 @@ def main()
     plt.plot(mus, log_likelihoods)
     plt.show()
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
     main()

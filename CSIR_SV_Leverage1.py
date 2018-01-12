@@ -144,7 +144,7 @@ N = 500
 # plt.plot(observations)
 # plt.show()
 
-sp = pd.read_csv('S&P 500 Historical Data.csv')
+sp = pd.read_csv('data/S&P 500 Historical Data.csv')
 sp = sp.set_index('Date')
 sp.index = pd.to_datetime(sp.index)
 close_price = np.asarray(sp['19950515':'20030424']['Close'])

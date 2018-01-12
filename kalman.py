@@ -48,7 +48,7 @@ class Kalman_Filter(object):
     def compute_alpha_hat(self, Y):
         '''This function compute alpha_hat = p(z_t|x_{1:t})'''
         #Y = np.array(Y)
-        self.T = T
+        T = self.T
         if self.mu_alpha is None:
             self.mu_alpha = np.zeros(T)
             self.V_alpha = np.zeros(T)
@@ -108,17 +108,19 @@ class Kalman_Filter(object):
         '''This function train a Kalman filter'''
         Y = np.array(Y)
         self.T = Y.shape[0]
+        # print(self.T)
         i = 0
         old_lkh = -np.inf
         while True:
             self.E_step(Y)
-            if i%5 == 0 and verbose:
+            if i > 0 and i%5 == 0 and verbose:
                 print('iter ', i, ' log_likelihood = ', self.log_likelihood)
                 print(' mu0:', '%0.3f' % self.mu0, 
                       ' V0:', '%0.3f' % self.V0,
-                      ' A:', '%0.3f' % self.A,
-                      ' b:', '%0.5f' % self.b,
-                      ' V:', '%0.3f' % self.V)
+                      ' A=phi:', '%0.3f' % self.A,
+                      ' b=(1-phi)*mu:', '%0.5f' % self.b,
+                      ' V=eta**2:', '%0.3f' % self.V,
+                      ' mu: ', '%0.3f' % (self.b / (1-self.A)))
             if np.abs(self.log_likelihood - old_lkh) < epsilon:
                 break
             old_lkh = self.log_likelihood
@@ -203,36 +205,36 @@ def main():
 
     # T = 5000
     # N = 3500
-    T = 5000
+    T = 150
     N = 600
     observations = generator_ar_1(sigma_epsilon_square=sigma_epsilon_square_0,
                                   sigma_eta_square=sigma_eta_square_0, phi=phi_0, mu=mu_0, T=T)
 
-    mus = [i*0.03 for i in range(10,30)]
-    log_likelihoods = []
-    for mu in mus:
-        A = phi_0
-        b = (1 - phi_0) * mu
-        log_lkh, _ = Kalman_Filter.compute_log_likelihood(Y=observations,
-                                        mu0=0, 
-                                        V0=1, 
-                                        A=A, 
-                                        b=b, 
-                                        V=sigma_eta_square_0,
-                                        V_epi=sigma_epsilon_square_0)
-        print("mu= %0.2f" % mu, " log-lokelihood= %0.3f" % log_lkh)
-        log_likelihoods.append(log_lkh)
+    # mus = [i*0.03 for i in range(10,30)]
+    # log_likelihoods = []
+    # for mu in mus:
+    #     A = phi_0
+    #     b = (1 - phi_0) * mu
+    #     log_lkh, _ = Kalman_Filter.compute_log_likelihood(Y=observations,
+    #                                     mu0=0, 
+    #                                     V0=1, 
+    #                                     A=A, 
+    #                                     b=b, 
+    #                                     V=sigma_eta_square_0,
+    #                                     V_epi=sigma_epsilon_square_0)
+    #     print("mu= %0.2f" % mu, " log-lokelihood= %0.3f" % log_lkh)
+    #     log_likelihoods.append(log_lkh)
 
-    # kalman_filter = Kalman_Filter(V_epi=sigma_epsilon_square_0, 
-    #                               mu0=0, 
-    #                               V0=1, 
-    #                               A=1, 
-    #                               b=1, 
-    #                               V=1)
-    # kalman_filter.fit(Y=observations, epsilon=1e-4, n_iter=1000)
-    plt.figure()
-    plt.plot(mus, log_likelihoods)
-    plt.show()
+    kalman_filter = Kalman_Filter(V_epi=sigma_epsilon_square_0, 
+                                  mu0=0, 
+                                  V0=1, 
+                                  A=1, 
+                                  b=0, 
+                                  V=1)
+    kalman_filter.fit(Y=observations, epsilon=1e-8, n_iter=3000)
+    # plt.figure()
+    # plt.plot(mus, log_likelihoods)
+    # plt.show()
 
 
 if __name__ == '__main__':
